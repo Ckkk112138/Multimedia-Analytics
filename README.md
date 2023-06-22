@@ -1,2 +1,2 @@
 # Multimedia-Analytics
-This repository is for the assignment
+Assignment of the course Multimedia Analytics.
