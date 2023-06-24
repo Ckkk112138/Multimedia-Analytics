@@ -1,8 +1,9 @@
 import os
 import matplotlib
+
 matplotlib.use('QtAgg')
-from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QPixmap, QPainter
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal
+from PyQt6.QtGui import QPixmap, QPainter, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
     QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -15,8 +16,12 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-
 url = []
+
+currentImagePath = ""
+
+# Global variable to store the last clicked QLabel
+last_clicked_label = None
 
 
 def load_image_paths(folder_path):
@@ -25,6 +30,20 @@ def load_image_paths(folder_path):
             file_path = os.path.join(folder_path, filename)
             url.append(file_path)
 
+
+class ClickableLabel(QLabel):
+    clicked = pyqtSignal()
+
+    def __init__(self, image_path):
+        super().__init__()
+        self.image_path = image_path
+
+    def get_image_path(self):
+        return self.image_path
+
+    def mousePressEvent(self, event):
+        self.clicked.emit()
+        super().mousePressEvent(event)
 
 
 class MyWindow(QMainWindow, Ui_MainWindow):
@@ -42,7 +61,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         layout = QHBoxLayout(self.frame)
         layout.addWidget(self.webview)
         layout.setContentsMargins(0, 0, 0, 0)
-
 
         # layout = QVBoxLayout()
         #
@@ -76,7 +94,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     #     # Update the canvas
     #     self.canvas.draw()
 
-
     def showLabels(self):
         grid_layout = QGridLayout(self.scrollAreaWidgetContents_2)
         grid_layout.setSpacing(30)  # Adjust spacing between images if needed
@@ -103,9 +120,10 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         num_columns = 3
         for index, image_path in enumerate(url):
             # Create a QLabel for the image
-            label = QLabel(self.scrollAreaWidgetContents)
+            label = ClickableLabel(image_path)
             label.setFixedSize(150, 150)  # Adjust the size of the QLabel as desired
             label.setStyleSheet("border: 1px solid gray")  # Add a border to the QLabel if desired
+            label.clicked.connect(self.label_clicked)
 
             # Load and set the image pixmap for the QLabel
             pixmap = QPixmap(image_path)
@@ -120,10 +138,54 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             # Add the QLabel to the grid layout at the calculated position
             grid_layout.addWidget(label, row, column)
 
+    def label_clicked(self):
+        global last_clicked_label
+        global currentImagePath
+
+        label = self.sender()
+
+        if last_clicked_label is not None:
+            last_clicked_label.setStyleSheet("border: 1px solid gray")
+
+        border_color = QColor(255, 0, 0)  # RGB values for blue
+        border_style = f"border: 4px solid {border_color.name()};"
+        label.setStyleSheet(border_style)
+
+        currentImagePath = label.get_image_path()
+        # print(currentImagePath)
+
+        last_clicked_label = label
+
+
 class DataWindow(QMainWindow, Data_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.myLayout = None
+        self.myImageLabel = None
+
+    def loadImage(self):
+        global currentImagePath
+
+        if self.myLayout is None:
+            layout = QHBoxLayout(self.frame)
+            self.myLayout = layout
+
+        image_label = QLabel()
+        image_path = currentImagePath  # Replace with the actual path to your image
+        print(currentImagePath)
+        pixmap = QPixmap(image_path)
+        image_label.setPixmap(pixmap.scaled(image_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                            Qt.TransformationMode.SmoothTransformation))
+        image_label.setScaledContents(True)  # Enable scaling of the image within the QLabel
+
+        self.myLayout.addWidget(image_label)
+        self.myImageLabel = image_label
+        print(self.myLayout.count())
+
+    def removeImage(self):
+        self.frame.layout().removeWidget(self.myImageLabel)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -131,8 +193,13 @@ if __name__ == '__main__':
     print(url)
     myWindow = MyWindow()
     dataWindow = DataWindow()
+
     myWindow.pushButton_2.clicked.connect(
-        lambda: {myWindow.close(), dataWindow.show()}
+        lambda: {myWindow.close(), dataWindow.show(), dataWindow.loadImage()}
+    )
+
+    dataWindow.pushButton.clicked.connect(
+        lambda: {dataWindow.removeImage(), dataWindow.close(), myWindow.show()}
     )
     extra = {
 
@@ -141,7 +208,4 @@ if __name__ == '__main__':
     }
     apply_stylesheet(app, theme='dark_blue.xml', extra=extra)
 
-
     sys.exit(app.exec())
-
-
