@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 url = []
+url2 = []
 
 currentImagePath = ""
 
@@ -25,11 +26,11 @@ currentImagePath = ""
 last_clicked_label = None
 
 
-def load_image_paths(folder_path):
+def load_image_paths(folder_path, url_list):
     for filename in os.listdir(folder_path):
         if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
             file_path = os.path.join(folder_path, filename)
-            url.append(file_path)
+            url_list.append(file_path)
 
 
 class ClickableLabel(QLabel):
@@ -52,6 +53,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         self.setupUi(self)
+        self.myImageGridLayout = None
 
         self.showImages()
         self.showLabels()
@@ -113,8 +115,11 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             grid_layout.addWidget(checkbox, row, column)
 
     def showImages(self):
-        grid_layout = QGridLayout(self.scrollAreaWidgetContents)
-        grid_layout.setSpacing(10)  # Adjust spacing between images if needed
+        if self.myImageGridLayout is None:
+            grid_layout = QGridLayout(self.scrollAreaWidgetContents)
+            grid_layout.setSpacing(10)  # Adjust spacing between images if needed
+            self.myImageGridLayout = grid_layout
+
 
         # Set the number of columns for the grid layout
         num_columns = 3
@@ -136,7 +141,46 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             row = index // num_columns
             column = index % num_columns
             # Add the QLabel to the grid layout at the calculated position
-            grid_layout.addWidget(label, row, column)
+            self.myImageGridLayout.addWidget(label, row, column)
+
+    def removeImages(self):
+        global currentImagePath
+        global last_clicked_label
+        last_clicked_label = None
+        currentImagePath = ""
+        while self.myImageGridLayout.count():
+            item = self.myImageGridLayout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if self.myImageGridLayout is None:
+            grid_layout = QGridLayout(self.scrollAreaWidgetContents)
+            grid_layout.setSpacing(10)  # Adjust spacing between images if needed
+            self.myImageGridLayout = grid_layout
+
+
+        # Set the number of columns for the grid layout
+        num_columns = 3
+        for index, image_path in enumerate(url2):
+            # Create a QLabel for the image
+            label = ClickableLabel(image_path)
+            label.setFixedSize(150, 150)  # Adjust the size of the QLabel as desired
+            label.setStyleSheet("border: 1px solid gray")  # Add a border to the QLabel if desired
+            label.clicked.connect(self.label_clicked)
+
+            # Load and set the image pixmap for the QLabel
+            pixmap = QPixmap(image_path)
+            print(pixmap.isNull())
+            label.setPixmap(pixmap.scaled(label.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                          Qt.TransformationMode.SmoothTransformation))
+            label.setScaledContents(True)  # Enable scaling of the image within the QLabel
+
+            # Calculate the row and column position for the current image
+            row = index // num_columns
+            column = index % num_columns
+            # Add the QLabel to the grid layout at the calculated position
+            self.myImageGridLayout.addWidget(label, row, column)
 
     def label_clicked(self):
         global last_clicked_label
@@ -189,13 +233,18 @@ class DataWindow(QMainWindow, Data_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    load_image_paths('G:\Desktop\multimedia_project\images')
+    load_image_paths('G:\Desktop\multimedia_project\images', url)
+    load_image_paths('G:\Desktop\multimedia_project\images 2', url2)
     print(url)
     myWindow = MyWindow()
     dataWindow = DataWindow()
 
     myWindow.pushButton_2.clicked.connect(
         lambda: {myWindow.close(), dataWindow.show(), dataWindow.loadImage()}
+    )
+
+    myWindow.searchButton.clicked.connect(
+        lambda: {myWindow.removeImages()}
     )
 
     dataWindow.pushButton.clicked.connect(
