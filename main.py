@@ -1,5 +1,6 @@
 import os
 import matplotlib
+from PyQt6.QtWebEngineCore import QWebEngineSettings
 
 matplotlib.use('QtAgg')
 from PyQt6.QtCore import Qt, QUrl, pyqtSignal
@@ -56,7 +57,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.showLabels()
 
         self.webview = QWebEngineView(self.frame)
-
         self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
         layout = QHBoxLayout(self.frame)
         layout.addWidget(self.webview)
