@@ -17,20 +17,20 @@
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>410</y>
-      <width>501</width>
-      <height>191</height>
+      <x>1190</x>
+      <y>260</y>
+      <width>251</width>
+      <height>331</height>
      </rect>
     </property>
    </widget>
    <widget class="QScrollArea" name="scrollArea">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>680</x>
       <y>10</y>
       <width>501</width>
-      <height>391</height>
+      <height>581</height>
      </rect>
     </property>
     <property name="widgetResizable">
@@ -42,39 +42,38 @@
        <x>0</x>
        <y>0</y>
        <width>499</width>
-       <height>389</height>
+       <height>579</height>
       </rect>
      </property>
     </widget>
    </widget>
-   <widget class="QScrollArea" name="scrollArea_2">
+   <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>9</x>
-      <y>19</y>
-      <width>251</width>
-      <height>311</height>
+      <x>10</x>
+      <y>10</y>
+      <width>661</width>
+      <height>581</height>
      </rect>
     </property>
-    <property name="widgetResizable">
-     <bool>true</bool>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
     </property>
-    <widget class="QWidget" name="scrollAreaWidgetContents_2">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>249</width>
-       <height>309</height>
-      </rect>
-     </property>
-    </widget>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth">
+     <number>5</number>
+    </property>
+    <property name="midLineWidth">
+     <number>0</number>
+    </property>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>350</y>
+      <x>1190</x>
+      <y>10</y>
       <width>251</width>
       <height>231</height>
      </rect>
@@ -87,7 +86,7 @@
       <number>3</number>
      </property>
      <item>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="searchEdit">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -98,45 +97,7 @@
         <string/>
        </property>
        <property name="text">
-        <string>Era</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="inputMask">
-        <string/>
-       </property>
-       <property name="text">
-        <string>Style</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_3">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="inputMask">
-        <string/>
-       </property>
-       <property name="text">
-        <string>Name</string>
+        <string>Search Here</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -164,28 +125,6 @@
       </widget>
      </item>
     </layout>
-   </widget>
-   <widget class="QFrame" name="frame">
-    <property name="geometry">
-     <rect>
-      <x>269</x>
-      <y>19</y>
-      <width>661</width>
-      <height>581</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
-    </property>
-    <property name="lineWidth">
-     <number>5</number>
-    </property>
-    <property name="midLineWidth">
-     <number>0</number>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

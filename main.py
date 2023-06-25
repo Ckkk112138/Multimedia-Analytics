@@ -56,7 +56,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.myImageGridLayout = None
 
         self.showImages()
-        self.showLabels()
+        # self.showLabels()
 
         self.webview = QWebEngineView(self.frame)
         self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
@@ -96,23 +96,23 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     #     # Update the canvas
     #     self.canvas.draw()
 
-    def showLabels(self):
-        grid_layout = QGridLayout(self.scrollAreaWidgetContents_2)
-        grid_layout.setSpacing(30)  # Adjust spacing between images if needed
-
-        # Set the number of columns for the grid layout
-        num_columns = 3
-
-        for i in range(18):
-            checkbox = QCheckBox("tree", self.scrollAreaWidgetContents_2)
-            checkbox.setStyleSheet("border-radius: 50%;")
-            checkbox.setAutoFillBackground(True)
-
-            row = i // num_columns
-            column = i % num_columns
-
-            # Add the checkbox to the grid layout
-            grid_layout.addWidget(checkbox, row, column)
+    # def showLabels(self):
+    #     grid_layout = QGridLayout(self.scrollAreaWidgetContents_2)
+    #     grid_layout.setSpacing(30)  # Adjust spacing between images if needed
+    #
+    #     # Set the number of columns for the grid layout
+    #     num_columns = 3
+    #
+    #     for i in range(18):
+    #         checkbox = QCheckBox("tree", self.scrollAreaWidgetContents_2)
+    #         checkbox.setStyleSheet("border-radius: 50%;")
+    #         checkbox.setAutoFillBackground(True)
+    #
+    #         row = i // num_columns
+    #         column = i % num_columns
+    #
+    #         # Add the checkbox to the grid layout
+    #         grid_layout.addWidget(checkbox, row, column)
 
     def showImages(self):
         if self.myImageGridLayout is None:
@@ -143,7 +143,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             # Add the QLabel to the grid layout at the calculated position
             self.myImageGridLayout.addWidget(label, row, column)
 
-    def removeImages(self):
+    def reloadImages(self):
         global currentImagePath
         global last_clicked_label
         last_clicked_label = None
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     )
 
     myWindow.searchButton.clicked.connect(
-        lambda: {myWindow.removeImages()}
+        lambda: {myWindow.reloadImages()}
     )
 
     dataWindow.pushButton.clicked.connect(
