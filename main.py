@@ -2,8 +2,10 @@ import os
 import matplotlib
 from PyQt6.QtWebEngineCore import QWebEngineSettings
 
+from QueryIntegration import initializeRetrieval, retrievePaintings
+
 matplotlib.use('QtAgg')
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
 from PyQt6.QtGui import QPixmap, QPainter, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
     QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
@@ -25,6 +27,7 @@ currentImagePath = ""
 # Global variable to store the last clicked QLabel
 last_clicked_label = None
 
+painting_dic = {}
 
 def load_image_paths(folder_path, url_list):
     for filename in os.listdir(folder_path):
@@ -120,7 +123,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             grid_layout.setSpacing(10)  # Adjust spacing between images if needed
             self.myImageGridLayout = grid_layout
 
-
         # Set the number of columns for the grid layout
         num_columns = 3
         for index, image_path in enumerate(url):
@@ -159,7 +161,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             grid_layout.setSpacing(10)  # Adjust spacing between images if needed
             self.myImageGridLayout = grid_layout
 
-
         # Set the number of columns for the grid layout
         num_columns = 3
         for index, image_path in enumerate(url2):
@@ -191,7 +192,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         if last_clicked_label is not None:
             last_clicked_label.setStyleSheet("border: 1px solid gray")
 
-        border_color = QColor(255, 0, 0)  # RGB values for blue
+        border_color = QColor(255, 0, 0)  # RGB values for red
         border_style = f"border: 4px solid {border_color.name()};"
         label.setStyleSheet(border_style)
 
@@ -200,6 +201,19 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
         last_clicked_label = label
 
+    def handlUserInput(self):
+        input_text = self.searchEdit.text()
+
+        return input_text
+
+    def queryOnImages(self, df, model, loaded_embeddings, neigh):
+        global painting_dic
+
+        userQuery = self.handlUserInput()
+        retrievedPaintings = retrievePaintings(userInput=userQuery, df=df, model=model, loaded_embeddings=loaded_embeddings,
+                                               neigh=neigh)
+        painting_dic = retrievedPaintings
+        print(painting_dic)
 
 class DataWindow(QMainWindow, Data_MainWindow):
     def __init__(self):
@@ -235,6 +249,8 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     load_image_paths('G:\Desktop\multimedia_project\images', url)
     load_image_paths('G:\Desktop\multimedia_project\images 2', url2)
+
+    df, model, loaded_embeddings, neigh = initializeRetrieval()
     print(url)
     myWindow = MyWindow()
     dataWindow = DataWindow()
@@ -244,7 +260,7 @@ if __name__ == '__main__':
     )
 
     myWindow.searchButton.clicked.connect(
-        lambda: {myWindow.reloadImages()}
+        lambda: { myWindow.queryOnImages(df, model, loaded_embeddings, neigh)}
     )
 
     dataWindow.pushButton.clicked.connect(
@@ -256,5 +272,4 @@ if __name__ == '__main__':
         'density_scale': '-1',
     }
     apply_stylesheet(app, theme='dark_blue.xml', extra=extra)
-
     sys.exit(app.exec())
