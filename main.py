@@ -2,7 +2,7 @@ import os
 import matplotlib
 from PyQt6.QtWebEngineCore import QWebEngineSettings
 
-from QueryIntegration import initializeRetrieval, retrievePaintings
+from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
 
 matplotlib.use('QtAgg')
 from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 url = []
-url2 = []
 
 currentImagePath = ""
 
@@ -29,11 +28,12 @@ last_clicked_label = None
 
 painting_dic = {}
 
-def load_image_paths(folder_path, url_list):
+def load_image_paths(folder_path, url_list, target_list):
     for filename in os.listdir(folder_path):
         if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
             file_path = os.path.join(folder_path, filename)
-            url_list.append(file_path)
+            if filename in target_list:
+                url_list.append(file_path)
 
 
 class ClickableLabel(QLabel):
@@ -145,7 +145,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             # Add the QLabel to the grid layout at the calculated position
             self.myImageGridLayout.addWidget(label, row, column)
 
-    def reloadImages(self):
+    def reloadImages(self, hasImage):
         global currentImagePath
         global last_clicked_label
         last_clicked_label = None
@@ -155,33 +155,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             widget = item.widget()
             if widget:
                 widget.deleteLater()
-
-        if self.myImageGridLayout is None:
-            grid_layout = QGridLayout(self.scrollAreaWidgetContents)
-            grid_layout.setSpacing(10)  # Adjust spacing between images if needed
-            self.myImageGridLayout = grid_layout
-
-        # Set the number of columns for the grid layout
-        num_columns = 3
-        for index, image_path in enumerate(url2):
-            # Create a QLabel for the image
-            label = ClickableLabel(image_path)
-            label.setFixedSize(150, 150)  # Adjust the size of the QLabel as desired
-            label.setStyleSheet("border: 1px solid gray")  # Add a border to the QLabel if desired
-            label.clicked.connect(self.label_clicked)
-
-            # Load and set the image pixmap for the QLabel
-            pixmap = QPixmap(image_path)
-            print(pixmap.isNull())
-            label.setPixmap(pixmap.scaled(label.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                          Qt.TransformationMode.SmoothTransformation))
-            label.setScaledContents(True)  # Enable scaling of the image within the QLabel
-
-            # Calculate the row and column position for the current image
-            row = index // num_columns
-            column = index % num_columns
-            # Add the QLabel to the grid layout at the calculated position
-            self.myImageGridLayout.addWidget(label, row, column)
+        if hasImage:
+            self.showImages()
 
     def label_clicked(self):
         global last_clicked_label
@@ -208,12 +183,24 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
     def queryOnImages(self, df, model, loaded_embeddings, neigh):
         global painting_dic
+        global url
 
         userQuery = self.handlUserInput()
         retrievedPaintings = retrievePaintings(userInput=userQuery, df=df, model=model, loaded_embeddings=loaded_embeddings,
                                                neigh=neigh)
         painting_dic = retrievedPaintings
-        print(painting_dic)
+        if painting_dic is None:
+            self.reloadImages(False)
+            return
+        file_paths = painting_dic['image_paths']
+        processed_paths = [path.replace('images/', '') for path in file_paths]
+        print(painting_dic['image_paths'])
+        print(processed_paths)
+        url = []
+        load_image_paths("G:\Desktop\multimedia_project\images", url, processed_paths)
+        self.reloadImages(True)
+        self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
+
 
 class DataWindow(QMainWindow, Data_MainWindow):
     def __init__(self):
@@ -247,8 +234,6 @@ class DataWindow(QMainWindow, Data_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    load_image_paths('G:\Desktop\multimedia_project\images', url)
-    load_image_paths('G:\Desktop\multimedia_project\images 2', url2)
 
     df, model, loaded_embeddings, neigh = initializeRetrieval()
     print(url)

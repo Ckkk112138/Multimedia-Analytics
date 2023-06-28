@@ -8,12 +8,10 @@ import sys
 import pickle
 import numpy as np
 
-
 import nltk
-nltk.download('stopwords')
-nltk.download('punkt')
 from nltk.corpus import stopwords
-
+# nltk.download('stopwords')
+# nltk.download('punkt')
 import re
 from itertools import chain
 from sklearn.feature_extraction.text import TfidfVectorizer
