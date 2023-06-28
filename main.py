@@ -265,6 +265,7 @@ class DataWindow(QMainWindow, Data_MainWindow):
         self.myLayout = None
         self.myImageLabel = None
 
+
     def loadImage(self):
         global currentImagePath
 
