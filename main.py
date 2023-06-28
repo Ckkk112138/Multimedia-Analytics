@@ -27,6 +27,9 @@ currentImagePath = ""
 last_clicked_label = None
 
 painting_dic = {}
+painting_info_list = []
+
+
 
 def load_image_paths(folder_path, url_list, target_list):
     for filename in os.listdir(folder_path):
@@ -175,6 +178,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         # print(currentImagePath)
 
         last_clicked_label = label
+        self.showImageText()
 
     def handlUserInput(self):
         input_text = self.searchEdit.text()
@@ -184,22 +188,74 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     def queryOnImages(self, df, model, loaded_embeddings, neigh):
         global painting_dic
         global url
+        global painting_info_list
 
         userQuery = self.handlUserInput()
-        retrievedPaintings = retrievePaintings(userInput=userQuery, df=df, model=model, loaded_embeddings=loaded_embeddings,
+        retrievedPaintings = retrievePaintings(userInput=userQuery, df=df, model=model,
+                                               loaded_embeddings=loaded_embeddings,
                                                neigh=neigh)
         painting_dic = retrievedPaintings
+        print(painting_dic)
         if painting_dic is None:
             self.reloadImages(False)
             return
         file_paths = painting_dic['image_paths']
         processed_paths = [path.replace('images/', '') for path in file_paths]
-        print(painting_dic['image_paths'])
-        print(processed_paths)
+        # print(painting_dic['image_paths'])
+        # print(processed_paths)
         url = []
+        painting_info_list = []
         load_image_paths("G:\Desktop\multimedia_project\images", url, processed_paths)
+
+        dates_list = painting_dic['dates']
+        names_list = painting_dic['names']
+        nationalities_list = painting_dic['nationalities']
+        styles_list = painting_dic['styles']
+        tags_list = painting_dic['tags']
+        medias_list = painting_dic['medias']
+        titles_list = painting_dic['titles']
+
+        print("done")
+
+        for i in range(0, len(processed_paths)):
+            new_dict = {}
+            new_dict['path'] = str(processed_paths[i])
+            new_dict['date'] = str(int(dates_list[i]))
+            new_dict['name'] = str(names_list[i])
+            new_dict['nationality'] = str(nationalities_list[i])
+            new_dict['style'] = str(styles_list[i])
+            new_dict['tag'] = str(tags_list[i])
+            new_dict['media'] = str(medias_list[i])
+            new_dict['title'] = str(titles_list[i])
+            painting_info_list.append(new_dict)
+
+        print(painting_info_list)
+        self.textBrowser.setText("")
         self.reloadImages(True)
         self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
+
+    def showImageText(self):
+        key_value_pairs = []
+        for dict in painting_info_list:
+            if dict['path'] in currentImagePath:
+                keys = list(dict.keys())
+                values = list(dict.values())
+
+                for i in range(1, len(keys)):
+                    key = keys[i]
+                    value = values[i]
+                    key_value_pairs.append(f"{key}: {value}")
+
+                key_value_pairs = "\n\n".join(key_value_pairs)
+
+        text = ""
+        for i in key_value_pairs:
+            text += i
+
+        self.textBrowser.setText(text)
+        font = self.textBrowser.font()
+        font.setPointSize(14)  # Set the desired font size
+        self.textBrowser.setFont(font)
 
 
 class DataWindow(QMainWindow, Data_MainWindow):
@@ -245,7 +301,7 @@ if __name__ == '__main__':
     )
 
     myWindow.searchButton.clicked.connect(
-        lambda: { myWindow.queryOnImages(df, model, loaded_embeddings, neigh)}
+        lambda: {myWindow.queryOnImages(df, model, loaded_embeddings, neigh)}
     )
 
     dataWindow.pushButton.clicked.connect(
