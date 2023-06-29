@@ -273,6 +273,14 @@ class DataWindow(QMainWindow, Data_MainWindow):
         self.myImageLabel = None
         self.myColorLayout = None
 
+        self.webview = QWebEngineView(self.frame_3)
+        self.webview.setZoomFactor(0.7)
+        self.webview.load(QUrl.fromLocalFile(
+            'G:\\Desktop\\multimedia_project\\map\\index.html'))
+        layout = QHBoxLayout(self.frame_3)
+        layout.addWidget(self.webview)
+        layout.setContentsMargins(1, 1, 1, 1)
+
     def loadImage(self):
         global currentImagePath
 
@@ -354,7 +362,7 @@ if __name__ == '__main__':
 
     myWindow.pushButton_2.clicked.connect(
         lambda: {myWindow.close(), dataWindow.show(),
-                 dataWindow.loadImage(), dataWindow.drawPieChart()}
+                 dataWindow.loadImage(), dataWindow.drawPieChart(), dataWindow.show()}
     )
 
     myWindow.searchButton.clicked.connect(

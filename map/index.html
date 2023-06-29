@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doping Bikers</title>
+    <!-- <link rel="stylesheet" href="./index.css"> -->
+
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background: #f6d5d5;
+}
+#main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+#svgBox {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+svg {
+    background: #b08fbb;
+    border-radius: 9px;
+}
+#tooltip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    text-align: center;
+    min-width: 120px;
+    max-width: 300px;
+    min-height: 50px;
+    background: #ca498c;
+    border-radius: 5px;
+    padding: 10px;
+}
+#legend {
+    display: flex;
+    flex-direction: column;
+    align-items:flex-end;
+    justify-content: flex-start;
+    position: absolute;
+    background: #f6d5d5;
+    font-size: 18px;
+    padding: 6px 22px;
+    border-radius: 5px;
+}
+.bikers {
+    color: #ca498c;
+    fill: #ca498c;
+}
+.dopers {
+    color: #8b2f8a;
+    fill: #8b2f8a;
+}
+
+
+    </style>
+    <script src="G:\Desktop\multimedia_project\map\d3.min.js"></script>
+</head>
+<body>
+    <!-- <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script> -->
+    <div id="main">
+        <div id="svgBox"></div>
+    </div>
+    <script>
+        var w = 800,
+            h = 800,
+            padding = 80,
+            svg = d3.select('#svgBox')
+                        .append('svg')
+                        .attr('width', w)
+                        .attr('height', h),
+            tooltip = d3.select('#svgBox')
+                        .append('div')
+                        .attr('id', 'tooltip')
+                        .style('opacity', 0),
+            // legend = d3.select('#svgBox')
+            //             .append('div')
+            //             .attr('id', 'legend')
+            //             .style('left', 620 + 'px')
+            //             .style('top', 300 + 'px'),
+            title = svg.append('text')
+                        .attr('x', 375)
+                        .attr('y', 69)
+                        .text('Umap-plot')
+                        .style('font-size', 30)
+                        .attr('id', 'title')
+            subtitle = svg.append('text')
+                        .attr('x', 482)
+                        .attr('y', 96)
+                        .text('test')
+                        .style('font-size', 20)
+                        .attr('id', 'subtitle');
+
+            var legendRectWidth = 20;
+            var legendRectHeight = 200;
+            var legendPadding = 10;
+            var width =1000;
+
+            var legend = svg.append('g')
+            // .attr('class', 'legend')
+            .attr('transform', 'translate(' + (w - legendRectWidth - legendPadding) + ',' + legendPadding + ')');
+
+            
+
+        d3.json('./data1.json')
+          .then((datas) => {
+            // X-AXIS
+            var xScale = d3.scaleTime()
+                       .domain([d3.min(datas, (d) => d.umap_x - 1),
+                                d3.max(datas, (d) => d.umap_x + 1)])
+                       .range([padding, w - padding]);
+            var xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d'));
+        
+            svg.append('g')
+                .attr('transform', 'translate(0,' + (h - padding) + ')')
+                .call(xAxis)
+                .attr('id', 'x-axis')
+                .style('font-size', '15');
+            
+            // Y-AXIS
+            // datas.forEach((d) => {
+            //     var parsedTime = d.Time.split(':');
+            //     d.Time = new Date(1970, 0, 1, 0, parsedTime[0], parsedTime[1]);
+            // })
+
+
+            var timeMin = d3.min(datas, (d) => d.umap_y);
+            var timeMax = d3.max(datas, (d) => d.umap_y);
+            var timeFormat = d3.timeFormat('%M:%S');
+
+
+            var yScale = d3.scaleTime()
+                            .domain([timeMin, timeMax])
+                            .range([padding, h - padding]);
+            var yAxis = d3.axisLeft(yScale)
+                            .tickFormat(d3.format('d'));
+
+            var colorScale = d3.scaleSequential()
+  .domain(d3.extent(datas, function(d) { return d.date; }))  // 设置颜色域范围为 d.date 的最小值和最大值
+  .interpolator(d3.interpolateViridis);  // 设置插值器为 Viridis 颜色方案
+
+
+
+
+            
+
+// 绘制颜色示例矩形
+            // legend.selectAll('rect')
+            // .data(d3.range(0, legendRectHeight, 2))
+            // .enter()
+            // .append('rect')
+            // .attr('x', -4*legendPadding)
+            // .attr('y', function(d) { return 2*d; })
+            // .attr('width', legendRectWidth)
+            // .attr('height', 2)
+            // // .attr('fill', (d) => colorScale(d.date))
+            // // ;
+            // .attr('fill', function(d) { 
+            //     console.log(d);
+            //     console.log(d / legendRectHeight);
+            //     console.log(colorScale(d3.interpolate(0, 1)(d / legendRectHeight)));
+            //      return colorScale(1000*d3.interpolate(0, 1)(d / legendRectHeight)); 
+            //     // return(d.date*100)
+                
+            //     });
+
+            // // 添加颜色示例标签
+            // var legendLabel = legend.append('text')
+            // // .attr('class', 'legend-label')
+            // .attr('x', legendRectWidth - 10*legendPadding)
+            // .attr('y', 1.2*legendRectHeight)
+            // .text('Color Legend');
+
+
+            svg.append('g')
+                .attr('transform', 'translate(' + padding + ', 0)')
+                .call(yAxis)
+                .attr('id', 'y-axis')
+                .style('font-size', '13');
+
+            // DOTS
+            svg.selectAll('circle')
+                .data(datas)
+                .enter()
+                .append('circle')
+                .attr('cx', (d) => xScale(d.umap_x))
+                .attr('cy', (d) => yScale(d.umap_y))
+                .attr('r', 8)
+                .attr('class', 'dot')
+                .attr('data-xvalue', (d) => d.umap_x)
+                .attr('data-yvalue', (d) => d.umap_y)
+                // .attr('class', (d) => (d.Doping ? 'dopers' : 'bikers'))
+                .attr('index', (d, i) => i)
+                .attr('fill', (d) => colorScale(d.date))
+            // TOOLTIPS
+                .on('mouseover', function (event, d) {
+                    var i = this.getAttribute('index');
+                    tooltip.transition().duration(200).style('opacity', 1);
+                    tooltip.html('name:'+
+                    d.image.substring(7, d.image.length - 4) + '<br />'
+                        // +'<img src="' + d.image + '"><br />' 
+                         + ' year: ' + d.date+'<br />' 
+                         + ' artist name: ' + d.artist_name+'<br />' 
+                         + ' narionality: ' + d.artist_nationality+'<br />' 
+                         + ' style: ' + d.style+'<br />' 
+                         + ' tags: ' + d.tags+'<br />' 
+                         + ' media: ' + d.media+'<br />' 
+
+                        //  (d.Doping ? '<br/><br/>' + d.Doping : '')
+                         
+                         )
+                            // .attr('data-date', d.date)
+                            .style('left', (xScale(d.umap_x)) + 20+'px')
+                            .style('top', yScale(d.umap_y) + 'px');
+                })
+                .on('mouseout', function () {
+                    tooltip.transition().duration(100).style('opacity', 0);
+                });
+                
+            // LEGEND
+            // legend.html('<p>Dopers - <span class="dopers circle">&#x25C9</span></p></p>'
+            //             +'<p>Bikers - <span class="bikers circle">&#x25C9</span></p>')
+          })
+
+
+          
+    </script>
+</body>
+</html>

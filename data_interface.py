@@ -37,11 +37,17 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
+        self.frame_3 = QtWidgets.QFrame(parent=self.tab_2)
+        self.frame_3.setGeometry(QtCore.QRect(9, 9, 1191, 601))
+        self.frame_3.setFrameShape(QtWidgets.QFrame.Shape.Box)
+        self.frame_3.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
+        self.frame_3.setLineWidth(4)
+        self.frame_3.setObjectName("frame_3")
         self.tabWidget.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -49,4 +55,4 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "MAIN"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "COLOR"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Pie"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "UMAP"))
