@@ -1,9 +1,10 @@
 import os
 import matplotlib
 from PyQt6.QtWebEngineCore import QWebEngineSettings
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
-
+from ColorComparison import get_main_colors
 matplotlib.use('QtAgg')
 from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
 from PyQt6.QtGui import QPixmap, QPainter, QColor
@@ -264,6 +265,7 @@ class DataWindow(QMainWindow, Data_MainWindow):
         self.setupUi(self)
         self.myLayout = None
         self.myImageLabel = None
+        self.frame_2 = None
 
 
     def loadImage(self):
@@ -287,6 +289,29 @@ class DataWindow(QMainWindow, Data_MainWindow):
 
     def removeImage(self):
         self.frame.layout().removeWidget(self.myImageLabel)
+
+    def drawPieChart(self):
+        # Extract main colors from the image
+        colors, counts = get_main_colors(currentImagePath)
+        # Normalize
+        proportions = counts / counts.sum()
+        fig = Figure(figsize=(5, 5))
+        canvas = FigureCanvas(fig)
+
+        ax = fig.add_subplot(111)
+        ax.pie(proportions, colors=colors / 4, labels=np.round(proportions, 2))
+
+        if self.frame_2.layout() is None:
+            layout = QVBoxLayout(self.frame_2)
+
+        # Remove previous widgets from the layout
+        for i in reversed(range(self.frame_2.layout().count())):
+            widget = self.frame_2.layout().itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        self.frame_2.layout().addWidget(canvas)
+        self.canvas = canvas
 
 
 if __name__ == '__main__':
