@@ -1,3 +1,18 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+from pyvis import network as net
+from data_interface import Ui_MainWindow as Data_MainWindow
+from main_interface import Ui_MainWindow
+from qt_material import apply_stylesheet
+import sys
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
+    QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui import QPixmap, QPainter, QColor
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
+from mpl_toolkits.mplot3d import Axes3D
+
 import os
 import matplotlib
 from PyQt6.QtWebEngineCore import QWebEngineSettings
@@ -6,20 +21,6 @@ from matplotlib.figure import Figure
 from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
 from ColorComparison import get_main_colors
 matplotlib.use('QtAgg')
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
-from PyQt6.QtGui import QPixmap, QPainter, QColor
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
-    QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-import sys
-from qt_material import apply_stylesheet
-from main_interface import Ui_MainWindow
-from data_interface import Ui_MainWindow as Data_MainWindow
-from pyvis import network as net
-import networkx as nx
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
 url = []
 
 currentImagePath = ""
@@ -29,7 +30,6 @@ last_clicked_label = None
 
 painting_dic = {}
 painting_info_list = []
-
 
 
 def load_image_paths(folder_path, url_list, target_list):
@@ -66,7 +66,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         # self.showLabels()
 
         self.webview = QWebEngineView(self.frame)
-        self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
+        self.webview.load(QUrl.fromLocalFile(
+            '/Users/yeyuan/Desktop/Multimedia-Analytics-master/dist/index.html'))
         layout = QHBoxLayout(self.frame)
         layout.addWidget(self.webview)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -124,7 +125,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     def showImages(self):
         if self.myImageGridLayout is None:
             grid_layout = QGridLayout(self.scrollAreaWidgetContents)
-            grid_layout.setSpacing(10)  # Adjust spacing between images if needed
+            # Adjust spacing between images if needed
+            grid_layout.setSpacing(10)
             self.myImageGridLayout = grid_layout
 
         # Set the number of columns for the grid layout
@@ -132,8 +134,10 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         for index, image_path in enumerate(url):
             # Create a QLabel for the image
             label = ClickableLabel(image_path)
-            label.setFixedSize(150, 150)  # Adjust the size of the QLabel as desired
-            label.setStyleSheet("border: 1px solid gray")  # Add a border to the QLabel if desired
+            # Adjust the size of the QLabel as desired
+            label.setFixedSize(150, 150)
+            # Add a border to the QLabel if desired
+            label.setStyleSheet("border: 1px solid gray")
             label.clicked.connect(self.label_clicked)
 
             # Load and set the image pixmap for the QLabel
@@ -141,7 +145,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             print(pixmap.isNull())
             label.setPixmap(pixmap.scaled(label.size(), Qt.AspectRatioMode.KeepAspectRatio,
                                           Qt.TransformationMode.SmoothTransformation))
-            label.setScaledContents(True)  # Enable scaling of the image within the QLabel
+            # Enable scaling of the image within the QLabel
+            label.setScaledContents(True)
 
             # Calculate the row and column position for the current image
             row = index // num_columns
@@ -206,7 +211,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         # print(processed_paths)
         url = []
         painting_info_list = []
-        load_image_paths("G:\Desktop\multimedia_project\images", url, processed_paths)
+        load_image_paths("./images", url, processed_paths)
 
         dates_list = painting_dic['dates']
         names_list = painting_dic['names']
@@ -233,7 +238,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         print(painting_info_list)
         self.textBrowser.setText("")
         self.reloadImages(True)
-        self.webview.load(QUrl.fromLocalFile('G:\Desktop\multimedia_project\dist\index.html'))
+        self.webview.load(QUrl.fromLocalFile(
+            '/Users/yeyuan/Desktop/Multimedia-Analytics-master/dist/index.html'))
 
     def showImageText(self):
         key_value_pairs = []
@@ -265,8 +271,7 @@ class DataWindow(QMainWindow, Data_MainWindow):
         self.setupUi(self)
         self.myLayout = None
         self.myImageLabel = None
-        self.frame_2 = None
-
+        self.myColorLayout = None
 
     def loadImage(self):
         global currentImagePath
@@ -281,7 +286,8 @@ class DataWindow(QMainWindow, Data_MainWindow):
         pixmap = QPixmap(image_path)
         image_label.setPixmap(pixmap.scaled(image_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
                                             Qt.TransformationMode.SmoothTransformation))
-        image_label.setScaledContents(True)  # Enable scaling of the image within the QLabel
+        # Enable scaling of the image within the QLabel
+        image_label.setScaledContents(True)
 
         self.myLayout.addWidget(image_label)
         self.myImageLabel = image_label
@@ -289,6 +295,9 @@ class DataWindow(QMainWindow, Data_MainWindow):
 
     def removeImage(self):
         self.frame.layout().removeWidget(self.myImageLabel)
+        widget = self.myColorLayout.itemAt(0).widget()
+        if widget is not None:
+            widget.deleteLater()
 
     def drawPieChart(self):
         # Extract main colors from the image
@@ -296,22 +305,43 @@ class DataWindow(QMainWindow, Data_MainWindow):
         # Normalize
         proportions = counts / counts.sum()
         fig = Figure(figsize=(5, 5))
-        canvas = FigureCanvas(fig)
-
-        ax = fig.add_subplot(111)
-        ax.pie(proportions, colors=colors / 4, labels=np.round(proportions, 2))
-
-        if self.frame_2.layout() is None:
+        if self.myColorLayout is None:
             layout = QVBoxLayout(self.frame_2)
+            self.myColorLayout = layout
+        
+        sorted_indices = np.argsort(-proportions)
+        sorted_colors = colors[sorted_indices]
+        sorted_proportions = proportions[sorted_indices]
+        
+        # Select the top 5 colors
+        top_colors = sorted_colors[:6]
+        top_proportions = sorted_proportions[:6]
+        cmap = plt.cm.get_cmap("tab20c", len(top_colors))
+        
+        ax = fig.add_subplot(111)
+        explode_index = np.argmax(top_proportions)
 
+    # Create an explode array with zeros for all slices except the one with the highest proportion
+        explode = np.zeros(len(top_proportions))
+        explode[explode_index] = 0.1
+        ax.pie(top_proportions, explode= explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))), shadow=True,startangle=45)
+        ax.set_title("The Top 6 Colors of the Left Paintings")
+        fig.savefig("./color.png")
+        # if self.frame_2.layout() is None:
+        # layout = QVBoxLayout(self.frame_2)
+        print(self.frame_2 is None)
         # Remove previous widgets from the layout
-        for i in reversed(range(self.frame_2.layout().count())):
-            widget = self.frame_2.layout().itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
+        # for i in reversed(range(self.frame_2.layout().count())):
+        
+        
+        
+        
+        canvas = FigureCanvas(fig)
+        # widget = self.frame_2.layout().itemAt(0).widget()
+        # if widget is not None:
+        #     widget.deleteLater()
 
-        self.frame_2.layout().addWidget(canvas)
-        self.canvas = canvas
+        self.myColorLayout.addWidget(canvas)
 
 
 if __name__ == '__main__':
@@ -323,7 +353,8 @@ if __name__ == '__main__':
     dataWindow = DataWindow()
 
     myWindow.pushButton_2.clicked.connect(
-        lambda: {myWindow.close(), dataWindow.show(), dataWindow.loadImage()}
+        lambda: {myWindow.close(), dataWindow.show(),
+                 dataWindow.loadImage(), dataWindow.drawPieChart()}
     )
 
     myWindow.searchButton.clicked.connect(
