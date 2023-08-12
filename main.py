@@ -72,6 +72,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         layout.addWidget(self.webview)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        self.myColorLayout = None
+
         # layout = QVBoxLayout()
         #
         # # Create a NetworkX graph
@@ -185,6 +187,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
         last_clicked_label = label
         self.showImageText()
+        print("show text")
+        self.drawPieChart()
 
     def handlUserInput(self):
         input_text = self.searchEdit.text()
@@ -264,6 +268,56 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         font.setPointSize(14)  # Set the desired font size
         self.textBrowser.setFont(font)
 
+    def drawPieChart(self):
+        self.removeColorGraph()
+
+        # Extract main colors from the image
+        colors, counts = get_main_colors(currentImagePath)
+        # Normalize
+        proportions = counts / counts.sum()
+        fig = Figure(figsize=(5, 5))
+        if self.myColorLayout is None:
+            layout = QVBoxLayout(self.frame_2)
+            self.myColorLayout = layout
+
+        sorted_indices = np.argsort(-proportions)
+        sorted_colors = colors[sorted_indices]
+        sorted_proportions = proportions[sorted_indices]
+
+        # Select the top 5 colors
+        top_colors = sorted_colors[:6]
+        top_proportions = sorted_proportions[:6]
+        cmap = plt.cm.get_cmap("tab20c", len(top_colors))
+
+        ax = fig.add_subplot(111)
+        explode_index = np.argmax(top_proportions)
+
+        # Create an explode array with zeros for all slices except the one with the highest proportion
+        explode = np.zeros(len(top_proportions))
+        explode[explode_index] = 0.1
+        ax.pie(top_proportions, explode=explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))),
+               shadow=True, startangle=45)
+        ax.set_title("The Top 6 Colors of the Left Paintings")
+        fig.savefig("./color.png")
+        # if self.frame_2.layout() is None:
+        # layout = QVBoxLayout(self.frame_2)
+        print(self.frame_2 is None)
+        # Remove previous widgets from the layout
+        # for i in reversed(range(self.frame_2.layout().count())):
+
+        canvas = FigureCanvas(fig)
+        # widget = self.frame_2.layout().itemAt(0).widget()
+        # if widget is not None:
+        #     widget.deleteLater()
+
+        self.myColorLayout.addWidget(canvas)
+
+    def removeColorGraph(self):
+        if self.myColorLayout is not None:
+            widget = self.myColorLayout.itemAt(0).widget()
+            if widget is not None:
+                widget.deleteLater()
+
 
 class DataWindow(QMainWindow, Data_MainWindow):
     def __init__(self):
@@ -281,75 +335,75 @@ class DataWindow(QMainWindow, Data_MainWindow):
         layout.addWidget(self.webview)
         layout.setContentsMargins(1, 1, 1, 1)
 
-    def loadImage(self):
-        global currentImagePath
+    # def loadImage(self):
+    #     global currentImagePath
+    #
+    #     if self.myLayout is None:
+    #         layout = QHBoxLayout(self.frame)
+    #         self.myLayout = layout
+    #
+    #     image_label = QLabel()
+    #     image_path = currentImagePath  # Replace with the actual path to your image
+    #     print(currentImagePath)
+    #     pixmap = QPixmap(image_path)
+    #     image_label.setPixmap(pixmap.scaled(image_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
+    #                                         Qt.TransformationMode.SmoothTransformation))
+    #     # Enable scaling of the image within the QLabel
+    #     image_label.setScaledContents(True)
+    #
+    #     self.myLayout.addWidget(image_label)
+    #     self.myImageLabel = image_label
+    #     print(self.myLayout.count())
 
-        if self.myLayout is None:
-            layout = QHBoxLayout(self.frame)
-            self.myLayout = layout
+    # def removeImage(self):
+    #     self.frame.layout().removeWidget(self.myImageLabel)
+    #     widget = self.myColorLayout.itemAt(0).widget()
+    #     if widget is not None:
+    #         widget.deleteLater()
 
-        image_label = QLabel()
-        image_path = currentImagePath  # Replace with the actual path to your image
-        print(currentImagePath)
-        pixmap = QPixmap(image_path)
-        image_label.setPixmap(pixmap.scaled(image_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                            Qt.TransformationMode.SmoothTransformation))
-        # Enable scaling of the image within the QLabel
-        image_label.setScaledContents(True)
-
-        self.myLayout.addWidget(image_label)
-        self.myImageLabel = image_label
-        print(self.myLayout.count())
-
-    def removeImage(self):
-        self.frame.layout().removeWidget(self.myImageLabel)
-        widget = self.myColorLayout.itemAt(0).widget()
-        if widget is not None:
-            widget.deleteLater()
-
-    def drawPieChart(self):
-        # Extract main colors from the image
-        colors, counts = get_main_colors(currentImagePath)
-        # Normalize
-        proportions = counts / counts.sum()
-        fig = Figure(figsize=(5, 5))
-        if self.myColorLayout is None:
-            layout = QVBoxLayout(self.frame_2)
-            self.myColorLayout = layout
-        
-        sorted_indices = np.argsort(-proportions)
-        sorted_colors = colors[sorted_indices]
-        sorted_proportions = proportions[sorted_indices]
-        
-        # Select the top 5 colors
-        top_colors = sorted_colors[:6]
-        top_proportions = sorted_proportions[:6]
-        cmap = plt.cm.get_cmap("tab20c", len(top_colors))
-        
-        ax = fig.add_subplot(111)
-        explode_index = np.argmax(top_proportions)
-
-    # Create an explode array with zeros for all slices except the one with the highest proportion
-        explode = np.zeros(len(top_proportions))
-        explode[explode_index] = 0.1
-        ax.pie(top_proportions, explode= explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))), shadow=True,startangle=45)
-        ax.set_title("The Top 6 Colors of the Left Paintings")
-        fig.savefig("./color.png")
-        # if self.frame_2.layout() is None:
-        # layout = QVBoxLayout(self.frame_2)
-        print(self.frame_2 is None)
-        # Remove previous widgets from the layout
-        # for i in reversed(range(self.frame_2.layout().count())):
-        
-        
-        
-        
-        canvas = FigureCanvas(fig)
-        # widget = self.frame_2.layout().itemAt(0).widget()
-        # if widget is not None:
-        #     widget.deleteLater()
-
-        self.myColorLayout.addWidget(canvas)
+    # def drawPieChart(self):
+    #     # Extract main colors from the image
+    #     colors, counts = get_main_colors(currentImagePath)
+    #     # Normalize
+    #     proportions = counts / counts.sum()
+    #     fig = Figure(figsize=(5, 5))
+    #     if self.myColorLayout is None:
+    #         layout = QVBoxLayout(self.frame_2)
+    #         self.myColorLayout = layout
+    #
+    #     sorted_indices = np.argsort(-proportions)
+    #     sorted_colors = colors[sorted_indices]
+    #     sorted_proportions = proportions[sorted_indices]
+    #
+    #     # Select the top 5 colors
+    #     top_colors = sorted_colors[:6]
+    #     top_proportions = sorted_proportions[:6]
+    #     cmap = plt.cm.get_cmap("tab20c", len(top_colors))
+    #
+    #     ax = fig.add_subplot(111)
+    #     explode_index = np.argmax(top_proportions)
+    #
+    # # Create an explode array with zeros for all slices except the one with the highest proportion
+    #     explode = np.zeros(len(top_proportions))
+    #     explode[explode_index] = 0.1
+    #     ax.pie(top_proportions, explode= explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))), shadow=True,startangle=45)
+    #     ax.set_title("The Top 6 Colors of the Left Paintings")
+    #     fig.savefig("./color.png")
+    #     # if self.frame_2.layout() is None:
+    #     # layout = QVBoxLayout(self.frame_2)
+    #     print(self.frame_2 is None)
+    #     # Remove previous widgets from the layout
+    #     # for i in reversed(range(self.frame_2.layout().count())):
+    #
+    #
+    #
+    #
+    #     canvas = FigureCanvas(fig)
+    #     # widget = self.frame_2.layout().itemAt(0).widget()
+    #     # if widget is not None:
+    #     #     widget.deleteLater()
+    #
+    #     self.myColorLayout.addWidget(canvas)
 
 
 if __name__ == '__main__':
@@ -361,8 +415,7 @@ if __name__ == '__main__':
     dataWindow = DataWindow()
 
     myWindow.pushButton_2.clicked.connect(
-        lambda: {myWindow.close(), dataWindow.show(),
-                 dataWindow.loadImage(), dataWindow.drawPieChart(), dataWindow.show()}
+        lambda: {myWindow.close(),  dataWindow.show()}
     )
 
     myWindow.searchButton.clicked.connect(
@@ -370,7 +423,7 @@ if __name__ == '__main__':
     )
 
     dataWindow.pushButton.clicked.connect(
-        lambda: {dataWindow.removeImage(), dataWindow.close(), myWindow.show()}
+        lambda: {dataWindow.close(), myWindow.show()}
     )
     extra = {
 
