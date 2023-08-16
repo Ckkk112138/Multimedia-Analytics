@@ -188,7 +188,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         last_clicked_label = label
         self.showImageText()
         print("show text")
-        self.drawPieChart()
+        self.drawHistogram()
 
     def handlUserInput(self):
         input_text = self.searchEdit.text()
@@ -268,14 +268,55 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         font.setPointSize(14)  # Set the desired font size
         self.textBrowser.setFont(font)
 
-    def drawPieChart(self):
-        self.removeColorGraph()
-
+    # def drawPieChart(self):
+    #     self.removeColorGraph()
+    #
+    #     # Extract main colors from the image
+    #     colors, counts = get_main_colors(currentImagePath)
+    #     # Normalize
+    #     proportions = counts / counts.sum()
+    #     fig = Figure(figsize=(5, 5))
+    #     if self.myColorLayout is None:
+    #         layout = QVBoxLayout(self.frame_2)
+    #         self.myColorLayout = layout
+    #
+    #     sorted_indices = np.argsort(-proportions)
+    #     sorted_colors = colors[sorted_indices]
+    #     sorted_proportions = proportions[sorted_indices]
+    #
+    #     # Select the top 5 colors
+    #     top_colors = sorted_colors[:6]
+    #     top_proportions = sorted_proportions[:6]
+    #     cmap = plt.cm.get_cmap("tab20c", len(top_colors))
+    #
+    #     ax = fig.add_subplot(111)
+    #     explode_index = np.argmax(top_proportions)
+    #
+    #     # Create an explode array with zeros for all slices except the one with the highest proportion
+    #     explode = np.zeros(len(top_proportions))
+    #     explode[explode_index] = 0.1
+    #     ax.pie(top_proportions, explode=explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))),
+    #            shadow=True, startangle=45)
+    #     ax.set_title("The Top 6 Colors of the Left Paintings")
+    #     fig.savefig("./color.png")
+    #     # if self.frame_2.layout() is None:
+    #     # layout = QVBoxLayout(self.frame_2)
+    #     print(self.frame_2 is None)
+    #     # Remove previous widgets from the layout
+    #     # for i in reversed(range(self.frame_2.layout().count())):
+    #
+    #     canvas = FigureCanvas(fig)
+    #     # widget = self.frame_2.layout().itemAt(0).widget()
+    #     # if widget is not None:
+    #     #     widget.deleteLater()
+    #
+    #     self.myColorLayout.addWidget(canvas)
+    def drawHistogram(self):
         # Extract main colors from the image
         colors, counts = get_main_colors(currentImagePath)
         # Normalize
         proportions = counts / counts.sum()
-        fig = Figure(figsize=(5, 5))
+
         if self.myColorLayout is None:
             layout = QVBoxLayout(self.frame_2)
             self.myColorLayout = layout
@@ -284,33 +325,27 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         sorted_colors = colors[sorted_indices]
         sorted_proportions = proportions[sorted_indices]
 
-        # Select the top 5 colors
+        # Select the top 6 colors
         top_colors = sorted_colors[:6]
         top_proportions = sorted_proportions[:6]
         cmap = plt.cm.get_cmap("tab20c", len(top_colors))
 
+        fig = Figure(figsize=(8, 6))  # Adjust the figure size for histograms
+
         ax = fig.add_subplot(111)
-        explode_index = np.argmax(top_proportions)
+        x = np.arange(len(top_colors))  # X-axis values for bars
 
-        # Create an explode array with zeros for all slices except the one with the highest proportion
-        explode = np.zeros(len(top_proportions))
-        explode[explode_index] = 0.1
-        ax.pie(top_proportions, explode=explode, autopct='%1.1f%%', colors=cmap(np.arange(len(top_colors))),
-               shadow=True, startangle=45)
-        ax.set_title("The Top 6 Colors of the Left Paintings")
-        fig.savefig("./color.png")
-        # if self.frame_2.layout() is None:
-        # layout = QVBoxLayout(self.frame_2)
-        print(self.frame_2 is None)
-        # Remove previous widgets from the layout
-        # for i in reversed(range(self.frame_2.layout().count())):
+        ax.bar(x, top_proportions, color=cmap(np.arange(len(top_colors))))
 
-        canvas = FigureCanvas(fig)
-        # widget = self.frame_2.layout().itemAt(0).widget()
-        # if widget is not None:
-        #     widget.deleteLater()
+        ax.set_xticks(x)
+        ax.set_xticklabels(top_colors, rotation='vertical')
 
-        self.myColorLayout.addWidget(canvas)
+        ax.set_ylabel('Proportion')
+        ax.set_title("Proportions of the Top 6 Colors")
+
+        self.myColorLayout.addWidget(FigureCanvas(fig))  # Add the canvas to the layout
+
+        fig.savefig("./histogram.png")
 
     def removeColorGraph(self):
         if self.myColorLayout is not None:
