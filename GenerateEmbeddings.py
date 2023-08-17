@@ -16,7 +16,7 @@ import re
 from itertools import chain
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-with open('E:\PycharmProject#\MultimediaAnalytics\SimilarPaintings\similarPaintings.pkl', 'rb') as file:
+with open('G:\Desktop\multimedia_project\SimilarPaintings\similarPaintings.pkl', 'rb') as file:
     data = pickle.load(file)
 
 # For some reason NaN is used as a string of nan -> remove this for now

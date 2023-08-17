@@ -6,7 +6,7 @@ from data_interface import Ui_MainWindow as Data_MainWindow
 from main_interface import Ui_MainWindow
 from qt_material import apply_stylesheet
 import sys
-#from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
     QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QPixmap, QPainter, QColor
@@ -183,7 +183,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         label.setStyleSheet(border_style)
 
         currentImagePath = label.get_image_path()
-        # print(currentImagePath)
+        print(currentImagePath)
 
         last_clicked_label = label
         self.showImageText()
@@ -191,9 +191,14 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.drawHistogram()
 
     def handlUserInput(self):
-        input_text = self.searchEdit.text()
+        topic = self.searchEdit.text()
+        title = self.searchEdit_title.text()
+        painter= self.searchEdit_painter.text()
+        print(topic)
+        print(title == "")
+        print(painter == "")
 
-        return input_text
+        return topic
 
     def queryOnImages(self, df, model, loaded_embeddings, neigh):
         global painting_dic
@@ -312,9 +317,11 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     #
     #     self.myColorLayout.addWidget(canvas)
     def drawHistogram(self):
+        self.removeColorGraph()
+        print("remove widget")
         # Normalize proportions
-        num_colors = int(input("Please enter the number of main colors to extract: "))
-        main_colors, proportions = get_main_colors_kmeans(currentImagePath, num_colors)
+        # num_colors = int(input("Please enter the number of main colors to extract: "))
+        main_colors, proportions = get_main_colors_kmeans(currentImagePath, 6)
 
         proportions_normalized = proportions / proportions.sum()
         if self.myColorLayout is None:
@@ -328,12 +335,17 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
         ax.bar(x, proportions_normalized, color=cmap(np.arange(len(main_colors))))
         ax.set_xticks(x)
-        ax.set_xticklabels([f"Color {i + 1}" for i in range(len(main_colors))], rotation='vertical')  # Custom labels
+        ax.set_xticklabels([f"Color {i + 1}" for i in range(len(main_colors))], rotation='horizontal')  # Custom labels
         ax.set_ylabel('Proportion')
         ax.set_title("Proportions of the Top 6 Colors")
+        fig.savefig("./histogram.png")
+        print(self.frame_2 is None)
+        # widget = self.frame_2.layout().itemAt(0).widget()
+        # if widget is not None:
+        #     widget.deleteLater()
 
         self.myColorLayout.addWidget(FigureCanvas(fig))  # Add the canvas to the layout
-        fig.savefig("./histogram.png")
+
 
     def removeColorGraph(self):
         if self.myColorLayout is not None:
@@ -353,10 +365,18 @@ class DataWindow(QMainWindow, Data_MainWindow):
         self.webview = QWebEngineView(self.frame_3)
         self.webview.setZoomFactor(0.7)
         self.webview.load(QUrl.fromLocalFile(
-            'G:\\Desktop\\multimedia_project\\map\\index.html'))
+            'G:\\Desktop\\multimedia_project\\d3-scatter-plot-master\\index.html'))
         layout = QHBoxLayout(self.frame_3)
         layout.addWidget(self.webview)
         layout.setContentsMargins(1, 1, 1, 1)
+
+    def markUmap(self):
+        newPath = "images/" + currentImagePath[9:]
+        with open("d3-scatter-plot-master/name.txt", "w") as f:
+            f.writelines(newPath)
+        self.webview.load(QUrl.fromLocalFile(
+            'G:\\Desktop\\multimedia_project\\d3-scatter-plot-master\\index.html'))
+
 
     # def loadImage(self):
     #     global currentImagePath
@@ -438,7 +458,7 @@ if __name__ == '__main__':
     dataWindow = DataWindow()
 
     myWindow.pushButton_2.clicked.connect(
-        lambda: {myWindow.close(),  dataWindow.show()}
+        lambda: {myWindow.close(),  dataWindow.markUmap(), dataWindow.show()}
     )
 
     myWindow.searchButton.clicked.connect(
