@@ -6,20 +6,20 @@ from data_interface import Ui_MainWindow as Data_MainWindow
 from main_interface import Ui_MainWindow
 from qt_material import apply_stylesheet
 import sys
-from PyQt6.QtWebEngineWidgets import QWebEngineView
+#from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QGridLayout, QCheckBox, QGraphicsScene, \
     QGraphicsView, QSizePolicy, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QPixmap, QPainter, QColor
 from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QFileSystemWatcher
 from mpl_toolkits.mplot3d import Axes3D
-
+from ColorComparison import get_main_colors_kmeans
 import os
 import matplotlib
-from PyQt6.QtWebEngineCore import QWebEngineSettings
+#from PyQt6.QtWebEngineCore import QWebEngineSettings
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
-from ColorComparison import get_main_colors
+from ColorComparison2 import get_main_colors
 matplotlib.use('QtAgg')
 url = []
 
@@ -312,39 +312,27 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     #
     #     self.myColorLayout.addWidget(canvas)
     def drawHistogram(self):
-        # Extract main colors from the image
-        colors, counts = get_main_colors(currentImagePath)
-        # Normalize
-        proportions = counts / counts.sum()
+        # Normalize proportions
+        num_colors = int(input("Please enter the number of main colors to extract: "))
+        main_colors, proportions = get_main_colors_kmeans(currentImagePath, num_colors)
 
+        proportions_normalized = proportions / proportions.sum()
         if self.myColorLayout is None:
             layout = QVBoxLayout(self.frame_2)
             self.myColorLayout = layout
+        cmap = plt.cm.get_cmap("tab20c", len(main_colors))
 
-        sorted_indices = np.argsort(-proportions)
-        sorted_colors = colors[sorted_indices]
-        sorted_proportions = proportions[sorted_indices]
-
-        # Select the top 6 colors
-        top_colors = sorted_colors[:6]
-        top_proportions = sorted_proportions[:6]
-        cmap = plt.cm.get_cmap("tab20c", len(top_colors))
-
-        fig = Figure(figsize=(8, 6))  # Adjust the figure size for histograms
-
+        fig = Figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
-        x = np.arange(len(top_colors))  # X-axis values for bars
+        x = np.arange(len(main_colors))
 
-        ax.bar(x, top_proportions, color=cmap(np.arange(len(top_colors))))
-
+        ax.bar(x, proportions_normalized, color=cmap(np.arange(len(main_colors))))
         ax.set_xticks(x)
-        ax.set_xticklabels(top_colors, rotation='vertical')
-
+        ax.set_xticklabels([f"Color {i + 1}" for i in range(len(main_colors))], rotation='vertical')  # Custom labels
         ax.set_ylabel('Proportion')
         ax.set_title("Proportions of the Top 6 Colors")
 
         self.myColorLayout.addWidget(FigureCanvas(fig))  # Add the canvas to the layout
-
         fig.savefig("./histogram.png")
 
     def removeColorGraph(self):
