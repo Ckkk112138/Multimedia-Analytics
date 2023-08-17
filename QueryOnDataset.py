@@ -7,6 +7,7 @@ import sys
 import pickle
 import numpy as np
 
+# tag embeddings words2vec(wikidata and gigga corpus) nearest neighbor search in embedding space
 from sklearn.neighbors import NearestNeighbors
 
 from GenerateEmbeddings import generateEmbeddings, reformateTitle, calculateAveragedEmbedding
