@@ -18,7 +18,8 @@ import matplotlib
 #from PyQt6.QtWebEngineCore import QWebEngineSettings
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
+# from QueryIntegrationUIKiwi import initializeRetrieval, retrievePaintings
+from QueryFinalKiwiIntegration import initializeRetrieval, retrievePaintings, retrievePaintingsTitleSpecific, retrievePaintingsPainterSpecific
 from ColorComparison2 import get_main_colors
 matplotlib.use('QtAgg')
 url = []
@@ -67,7 +68,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
         self.webview = QWebEngineView(self.frame)
         self.webview.load(QUrl.fromLocalFile(
-            '/Users/yeyuan/Desktop/Multimedia-Analytics-master/dist/index.html'))
+            'G:\\Desktop\\multimedia_project\\dist\\index.html'))
         layout = QHBoxLayout(self.frame)
         layout.addWidget(self.webview)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -193,22 +194,51 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     def handlUserInput(self):
         topic = self.searchEdit.text()
         title = self.searchEdit_title.text()
-        painter= self.searchEdit_painter.text()
+        painter = self.searchEdit_painter.text()
+
+        paraList = [topic, title, painter]
+        status = -1
+        if topic != "":
+            if painter != "":
+                status = 3
+            else:
+                status = 1
+        elif title != "":
+            status = 2
+        elif painter != "":
+            status = 4
+
+
+        print(status)
         print(topic)
         print(title == "")
         print(painter == "")
 
-        return topic
+        return status, paraList
 
-    def queryOnImages(self, df, model, loaded_embeddings, neigh):
+    def queryOnImages(self, df, model, loaded_embeddings):
         global painting_dic
         global url
         global painting_info_list
 
-        userQuery = self.handlUserInput()
-        retrievedPaintings = retrievePaintings(userInput=userQuery, df=df, model=model,
-                                               loaded_embeddings=loaded_embeddings,
-                                               neigh=neigh)
+        s, pList = self.handlUserInput()
+
+        if s == -1:
+            self.textBrowser.setText("Please enter a query in the search bar.")
+            font = self.textBrowser.font()
+            font.setPointSize(14)  # Set the desired font size
+            self.textBrowser.setFont(font)
+            return None
+        elif s == 1:
+            retrievedPaintings = retrievePaintings(user_input=pList[0], df=df, model=model,
+                                                   loaded_embeddings=loaded_embeddings)
+        elif s == 2:
+            retrievedPaintings = retrievePaintingsTitleSpecific(user_input=pList[1], df=df)
+        elif s == 3:
+            retrievedPaintings = retrievePaintingsPainterSpecific(painterInput=pList[2], topicInfo=pList[0], df=df, model=model, loaded_embeddings=loaded_embeddings)
+        elif s == 4:
+            retrievedPaintings = retrievePaintingsPainterSpecific(painterInput=pList[2], df=df, model=model, loaded_embeddings=loaded_embeddings)
+
         painting_dic = retrievedPaintings
         print(painting_dic)
         if painting_dic is None:
@@ -248,7 +278,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.textBrowser.setText("")
         self.reloadImages(True)
         self.webview.load(QUrl.fromLocalFile(
-            '/Users/yeyuan/Desktop/Multimedia-Analytics-master/dist/index.html'))
+            'G:\\Desktop\\multimedia_project\\dist\\index.html'))
 
     def showImageText(self):
         key_value_pairs = []
@@ -452,7 +482,7 @@ class DataWindow(QMainWindow, Data_MainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    df, model, loaded_embeddings, neigh = initializeRetrieval()
+    df, model, loaded_embeddings = initializeRetrieval()
     print(url)
     myWindow = MyWindow()
     dataWindow = DataWindow()
@@ -462,7 +492,7 @@ if __name__ == '__main__':
     )
 
     myWindow.searchButton.clicked.connect(
-        lambda: {myWindow.queryOnImages(df, model, loaded_embeddings, neigh)}
+        lambda: {myWindow.queryOnImages(df, model, loaded_embeddings)}
     )
 
     dataWindow.pushButton.clicked.connect(

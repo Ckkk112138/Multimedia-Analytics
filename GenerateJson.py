@@ -159,7 +159,7 @@ def generateJsonFiles(df):
     # List of dataframes split by era and style
     listSplitDfs, listOfEras = splitDfEraStyle(df)
     # delete and recreate folder where we save json in:
-    folder = "G:\Desktop\multimedia_project\dist\jsonData"
+    folder = "G:\\Desktop\\multimedia_project\\dist\\jsonData"
     flushFolder(folder)
 
     generateRes(listSplitDfs, folder)

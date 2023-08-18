@@ -18,9 +18,9 @@
     <property name="geometry">
      <rect>
       <x>1190</x>
-      <y>260</y>
+      <y>290</y>
       <width>251</width>
-      <height>331</height>
+      <height>301</height>
      </rect>
     </property>
    </widget>
@@ -75,7 +75,7 @@
       <x>1190</x>
       <y>10</y>
       <width>251</width>
-      <height>231</height>
+      <height>265</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -85,6 +85,22 @@
      <property name="topMargin">
       <number>3</number>
      </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Topic</string>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QLineEdit" name="searchEdit">
        <property name="sizePolicy">
@@ -105,6 +121,22 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Title</string>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="searchEdit_title">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -120,6 +152,22 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Painter</string>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="margin">
+        <number>0</number>
        </property>
       </widget>
      </item>
