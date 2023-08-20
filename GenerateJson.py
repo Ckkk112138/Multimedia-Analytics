@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore", category=Warning)
 
 def splitDfEra(df):
     minimumDate = df['date'].min()
-    maximumDate =  df['date'].max()
+    maximumDate = df['date'].max()
 
     beginYear = math.floor(minimumDate / 100) * 100
     maxYear = math.ceil(maximumDate / 100) * 100
@@ -18,7 +18,7 @@ def splitDfEra(df):
     # Create eras to divide paintings in.
     increment = 100
     eras = []
-    startYear = beginYear 
+    startYear = beginYear
     while startYear < maxYear:
         endEra = startYear + increment - 1
         eras.append((startYear, endEra))
@@ -30,18 +30,20 @@ def splitDfEra(df):
     # Separate the painitings based on era
     eraDataframes = []
     # This is used for later in the menu.json
-    listOfEras = [] 
+    listOfEras = []
     for era in eras:
-         startYear, endYear = era
-         eraDf = df[(df['date'] >= startYear) & (df['date'] <= endYear)]
-         # Create column that determines the era of painting
-         eraDf['era'] = f"{startYear}-{endYear}"
-         # add eras to list
-         listOfEras.append(f"{startYear}-{endYear}")
-         eraDataframes.append(eraDf[['id','date','style', 'image', 'title', 'era']])
+        startYear, endYear = era
+        eraDf = df[(df['date'] >= startYear) & (df['date'] <= endYear)]
+        # Create column that determines the era of painting
+        eraDf['era'] = f"{startYear}-{endYear}"
 
-    return eraDataframes, listOfEras 
+        if eraDf.shape[0] > 0:
+            # add eras to list
+            listOfEras.append(f"{startYear}-{endYear}")
 
+            eraDataframes.append(eraDf[['id', 'date', 'style', 'image', 'title', 'era']])
+
+    return eraDataframes, listOfEras
 def splitDfStyle(listDf):
     eraStyleDataframes = []
     counter = 1
